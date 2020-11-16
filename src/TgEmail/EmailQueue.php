@@ -2,13 +2,11 @@
 
 namespace TgEmail;
 
-use TgUtils\Auth\CredentialsProvider;
 use TgLog\Log;
 use TgUtils\Date;
 use TgUtils\Request;
 
 use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
 
 /**
  * Central mail handler using PHPMailer.
@@ -16,7 +14,7 @@ use PHPMailer\PHPMailer\SMTP;
  * @author ralph
  *        
  */
-class MailQueue {
+class EmailQueue {
 
     /** Constant for blocking any mail sending */
     public const BLOCK = 'block';
@@ -33,28 +31,18 @@ class MailQueue {
 
     protected $mailDAO;
     
-    protected $credentialsProvider;
-
-    public function __construct($config, $mailDAO, CredentialsProvider $provider = NULL) {
+    public function __construct(EmailConfig $config, EmailsDAO $mailDAO) {
         $this->config              = $config;
         $this->mailDAO             = $mailDAO;
-        $this->credentialsProvider = $provider;
-    }
-
-    /**
-     * Set teh credentials provider.
-     */
-    public function setCredentialsProvider(CredentialsProvider $provider) {
-        $this->credentialsProvider = $provider;
     }
 
     public function createTestMail() {
         $rc = new Email();
-        $rc->setSender(MailAddress::from($this->config['from']['email'], $this->config['from']['name']));
+        $rc->setSender($this->config->getDefaultSender());
         $rc->setBody(Email::TEXT, 'This is a successfull e-mail test (TXT)');
         $rc->setBody(Email::HTML, '<html><body><h1>Success</h1><p>This is a successfull e-mail test (HTML)</p></body></html>');
-        $rc->addTo($this->config['debugAddress']['email'], $this->config['debugAddress']['name']);
-        $rc->setSubject($this->config['subjectPrefix'] . 'Test-Mail');
+        $rc->addTo($this->config->getDebugAddress());
+        $rc->setSubject($this->config->getSubjectPrefix() . 'Test-Mail');
         return $rc;
     }
     
@@ -99,20 +87,15 @@ class MailQueue {
         if ($this->mailer == null) {
             $this->mailer = new PHPMailer();
             $this->mailer->IsSMTP(); // telling the class to use SMTP
-            $this->mailer->SMTPDebug = $this->config['smtp']['debug'];
-            $this->mailer->SMTPAuth = $this->config['smtp']['auth'];
-            $this->mailer->SMTPSecure = $this->config['smtp']['secure'];
-            $this->mailer->Port = $this->config['smtp']['port'];
-            $this->mailer->Host = $this->config['smtp']['host'];
-            if ($this->credentialsProvider != NULL) {
-                $this->mailer->Username = $this->credentialsProvider->getUsername();
-                $this->mailer->Password = $this->credentialsProvider->getPassword();
-            } else {
-                $this->mailer->Username = $this->config['smtp']['username'];
-                $this->mailer->Password = $this->config['smtp']['password'];
-            }
-            $this->mailer->CharSet = $this->config['smtp']['charset'];
-            $this->mailer->Encoding = 'base64';
+            $this->mailer->SMTPDebug  = $this->config->getSmtpConfig()->getDebugLevel();
+            $this->mailer->SMTPAuth   = $this->config->getSmtpConfig()->isAuth();
+            $this->mailer->SMTPSecure = $this->config->getSmtpConfig()->getSecureOption();
+            $this->mailer->Port       = $this->config->getSmtpConfig()->getPort();
+            $this->mailer->Host       = $this->config->getSmtpConfig()->getHost();
+            $this->mailer->Username   = $this->config->getSmtpConfig()->getUsername();
+            $this->mailer->Password   = $this->config->getSmtpConfig()->getPassword();
+            $this->mailer->CharSet    = $this->config->getSmtpConfig()->getCharset();
+            $this->mailer->Encoding   = 'base64';
         } else {
             $this->mailer->clearAllRecipients();
             $this->mailer->clearAttachments();
@@ -158,7 +141,7 @@ class MailQueue {
             }
             return $rc;
         }
-        throw new MailException('QueueProcessing not supported. No DAO available.');
+        throw new EmailException('QueueProcessing not supported. No DAO available.');
     }
 
     /**
@@ -199,7 +182,7 @@ class MailQueue {
             }
             return FALSE;
         }
-        throw new MailException('No DAO available. Cannot retrieve e-mail by ID.');
+        throw new EmailException('No DAO available. Cannot retrieve e-mail by ID.');
     }
 
     /**
@@ -214,16 +197,16 @@ class MailQueue {
         $rc->setBody(Email::TEXT, $email->getBody(Email::TEXT));
         $rc->setBody(Email::HTML, $email->getBody(Email::HTML));
         
-        if ($this->getMode() == MailQueue::REROUTE) {
-            $rc->setSubject($this->config['reroute']['prefix'].' '.$email->getSubject().' - '.$email->stringify($email->getTo()));
-            $rc->addTo(MailAddress::from($this->config['reroute']['to']['email'], $this->config['reroute']['to']['name']));
+        if ($this->config->getMailMode() == EmailQueue::REROUTE) {
+            $rc->setSubject($this->config->getRerouteConfig()->getSubjectPrefix().' '.$email->getSubject().' - '.$email->stringify($email->getTo()));
+            $rc->addTo($this->config->getRerouteConfig()->getRecipients());
         } else {
             $rc->setSubject($email->getSubject());
             $rc->addTo($email->getTo());
             $rc->addCc($email->getCcc());
             $rc->addBcc($email->getBcc());
-            if ($this->getMode() == MailQueue::BCC) {
-                $rc->addBcc(MailAddress::from($this->config['bcc']['email'], $this->config['bcc']['name']));
+            if ($this->config->getMailMode() == EmailQueue::BCC) {
+                $rc->addBcc($this->config->getBccConfig()->getRecipients());
             }
         }
     }
@@ -284,7 +267,7 @@ class MailQueue {
         }
 
         $rc = FALSE;
-        if ($this->getMode() != MailQueue::BLOCK) {
+        if ($this->config->getMailMode() != EmailQueue::BLOCK) {
             $rc = $phpMailer->send();
             Log::debug('Mail sent: '.$email->getLogString());
             if (!$rc) {
@@ -322,7 +305,7 @@ class MailQueue {
             $rc = $this->mailDAO->create($email);
             return $rc;
         }
-        throw new MailException('Queueing is not supported. No DAO available.');
+        throw new EmailException('Queueing is not supported. No DAO available.');
     }
 
 }

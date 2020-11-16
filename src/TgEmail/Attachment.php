@@ -46,7 +46,7 @@ class Attachment {
             }
             return new Attachment($a->type, $a->name, $a->cid, $a->path, $a->mimeType, $a->deleteAfterSent, $a->deleteAfterFailed);
         }
-        throw new MailException('Cannot convert attachment');
+        throw new EmailException('Cannot convert attachment');
     }
 }
 

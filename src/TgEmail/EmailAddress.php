@@ -8,7 +8,7 @@ namespace TgEmail;
  * @author ralph
  *        
  */
-class MailAddress {
+class EmailAddress {
 
     /**
      * The actual email address
@@ -46,11 +46,11 @@ class MailAddress {
     }
 
     /**
-     * Returns a MailAddress object from a compliant string.
+     * Returns a EmailAddress object from a compliant string.
      *
      * @param string $s
      *            - a mail compliant string
-     * @return MailAddress - The MailAddress object
+     * @return EmailAddress - The EmailAddress object
      */
     public static function from($s, $name = NULL) {
         if (is_string($s)) {
@@ -66,16 +66,16 @@ class MailAddress {
                         $email = trim(substr($email, 0, $pos));
                     }
 
-                    return new MailAddress($email, $name);
+                    return new EmailAddress($email, $name);
                 }
-                return new MailAddress($s);
+                return new EmailAddress($s);
             } else {
-                return new MailAddress($s, $name);
+                return new EmailAddress($s, $name);
             }
-        } else if (is_a($s, 'TgEmail\\MailAddress')) {
+        } else if (is_a($s, 'TgEmail\\EmailAddress')) {
             return $s;
         } else if (is_object($s)) {
-            return new MailAddress($s-email, $s->name);
+            return new EmailAddress($s-email, $s->name);
         }
     }
 }

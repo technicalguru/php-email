@@ -38,27 +38,29 @@ class Email {
     public function getSender() {
         if ($this->sender != NULL) {
             if (!is_object($this->sender)) {
-                $this->sender = MailAddress::from($this->sender);
+                $this->sender = EmailAddress::from($this->sender);
             }
         }
         return $this->sender;
     }
     
     public function setSender($email, $name) {
-        $this->sender = MailAddress::from($email, $name);
+        $this->sender = EmailAddress::from($email, $name);
+        return $this;
     }
     
     public function getReplyTo() {
         if ($this->reply_to != NULL) {
             if (!is_object($this->reply_to)) {
-                $this->reply_to = MailAddress::from($this->reply_to);
+                $this->reply_to = EmailAddress::from($this->reply_to);
             }
         }
         return $this->sender;
     }
     
     public function setReplyTo($email, $name) {
-        $this->reply_to = MailAddress::from($email, $name);
+        $this->reply_to = EmailAddress::from($email, $name);
+        return $this;
     }
     
     protected function getRecipients() {
@@ -80,7 +82,7 @@ class Email {
     protected function convertToAddresses($arr) {
         $rc = array();
         foreach ($arr AS $address) {
-            $rc[] = MailAddress::from($address);
+            $rc[] = EmailAddress::from($address);
         }
         return $rc;
     }
@@ -95,12 +97,13 @@ class Email {
                 $this->addTo($a);
             }
         } else if (is_string($address)) {
-            getRecipients()->to[] = MailAddress::from($address, $name);
+            getRecipients()->to[] = EmailAddress::from($address, $name);
         } else if (is_a($address, 'TgEmail\\MailAddress')) {
             getRecipients()->to[] = $address;
         } else {
-            throw new MailException('Cannot add TO recipient(s)');
+            throw new EmailException('Cannot add TO recipient(s)');
         }
+        return $this;
     }
             
     public function getCc() {
@@ -113,12 +116,13 @@ class Email {
                 $this->addCc($a);
             }
         } else if (is_string($address)) {
-            getRecipients()->cc[] = MailAddress::from($address, $name);
+            getRecipients()->cc[] = EmailAddress::from($address, $name);
         } else if (is_a($address, 'TgEmail\\MailAddress')) {
             getRecipients()->cc[] = $address;
         } else {
-            throw new MailException('Cannot add CC recipient(s)');
+            throw new EmailException('Cannot add CC recipient(s)');
         }
+        return $this;
     }
             
     public function getBcc() {
@@ -131,12 +135,13 @@ class Email {
                 $this->addBcc($a);
             }
         } else if (is_string($address)) {
-            getRecipients()->bcc[] = MailAddress::from($address, $name);
+            getRecipients()->bcc[] = EmailAddress::from($address, $name);
         } else if (is_a($address, 'TgEmail\\MailAddress')) {
             getRecipients()->bcc[] = $address;
         } else {
-            throw new MailException('Cannot add BCC recipient(s)');
+            throw new EmailException('Cannot add BCC recipient(s)');
         }
+        return $this;
     }
          
     public function getSubject() {
@@ -145,6 +150,7 @@ class Email {
     
     public function setSubject($s) {
         $this->subject = $s;
+        return $this;
     }
     
     public function getBody($type = 'text') {
@@ -166,6 +172,7 @@ class Email {
             $this->body = new \stdClass;
         }
         $this->body->$type = $body;
+        return $this;
     }
     
     public function getAttachments() {
@@ -184,6 +191,7 @@ class Email {
     public function addAttachment(Attachment $a) {
         $this->getAttachments();
         $this->attachments[] = $a;
+        return $this;
     }
 
     public function addAttachments(array $arr) {
@@ -191,6 +199,7 @@ class Email {
         foreach ($arr AS $a) {
             $this->attachments[] = $a;
         }
+        return $this;
     }
     
     public function getSentTime() {

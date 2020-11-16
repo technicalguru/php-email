@@ -7,7 +7,7 @@ namespace TgEmail;
  * @author ralph
  *        
  */
-class MailException extends \Exception {
+class EmailException extends \Exception {
 
     /**
      * Constructor.
