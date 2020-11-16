@@ -1,0 +1,3 @@
+eclipse.preferences.version=1
+include_path=0;/php-email/src
+org.eclipse.php.composer.corebuildpath.includes.excludes=<buildpathentry kind\="src" path\="vendor"/>\n

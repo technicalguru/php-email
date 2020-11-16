@@ -16,11 +16,18 @@
 	],
 	"require" : {
 		"php" : ">=7.0.0",
-		"technicalguru/utils" : "~1"
+		"technicalguru/utils" : "~1",
+		"phpmailer/phpmailer" : "^6.1",
+		"symfony/polyfill-mbstring" : "^1.20",
+		"technicalguru/database" : "~0"
 	},
 	"autoload" : {
 		"psr-4" : {
-			"TgEmail\\" : "src/TgEmail/"
+			"TgEmail\\" : "src/TgEmail/",
+			"" : ""
+		},
+		"psr-0" : {
+			"TgEmail" : "src/TgEmail"
 		}
 	},
 	"require-dev" : {
