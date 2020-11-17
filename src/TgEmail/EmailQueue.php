@@ -25,15 +25,16 @@ class EmailQueue {
     /** Constant for default mail sending */
     public const DEFAULT = 'default';
     
-    protected $mailer = null;
+    protected $mailer;
 
     protected $config;
 
     protected $mailDAO;
     
     public function __construct(EmailConfig $config, EmailsDAO $mailDAO) {
-        $this->config              = $config;
-        $this->mailDAO             = $mailDAO;
+        $this->config  = $config;
+        $this->mailDAO = $mailDAO;
+        $this->mailer  = NULL;
     }
 
     public function createTestMail() {
@@ -175,7 +176,7 @@ class EmailQueue {
                         $email->status = Email::PENDING;
                     }
                 } else {
-                    $email->sent_time = new Date(time(), 'Europe/Berlin');
+                    $email->sent_time = new Date(time(), $this->config-getTimezone());
                 }
                 $this->mailDAO->save($email);
                 return $rc;
@@ -298,8 +299,8 @@ class EmailQueue {
      */
     protected function _queue($email) {
         if ($this->mailDAO != NULL) {
-            $email->queued_time      = new Date(time(), 'Europe/Berlin');
-            $email->status           = Email::PENDING;
+            $email->queued_time     = new Date(time(), $this->config-getTimezone());
+            $email->status          = Email::PENDING;
             $email->failed_attempts = 0;
             $email->sent_time       = NULL;
             $rc = $this->mailDAO->create($email);

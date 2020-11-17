@@ -98,12 +98,12 @@ class Email {
             }
         } else if (is_string($address)) {
             getRecipients()->to[] = EmailAddress::from($address, $name);
-        } else if (is_a($address, 'TgEmail\\MailAddress')) {
-            getRecipients()->to[] = $address;
+        } else if (is_object($address)) {
+            getRecipients()->to[] = EmailAddress::from($address);
         } else {
             throw new EmailException('Cannot add TO recipient(s)');
         }
-        return $this;
+        return $this;        
     }
             
     public function getCc() {
@@ -117,12 +117,12 @@ class Email {
             }
         } else if (is_string($address)) {
             getRecipients()->cc[] = EmailAddress::from($address, $name);
-        } else if (is_a($address, 'TgEmail\\MailAddress')) {
-            getRecipients()->cc[] = $address;
+        } else if (is_object($address)) {
+            getRecipients()->cc[] = EmailAddress::from($address);
         } else {
             throw new EmailException('Cannot add CC recipient(s)');
         }
-        return $this;
+        return $this;        
     }
             
     public function getBcc() {
@@ -136,12 +136,12 @@ class Email {
             }
         } else if (is_string($address)) {
             getRecipients()->bcc[] = EmailAddress::from($address, $name);
-        } else if (is_a($address, 'TgEmail\\MailAddress')) {
-            getRecipients()->bcc[] = $address;
+        } else if (is_object($address)) {
+            getRecipients()->bcc[] = EmailAddress::from($address);
         } else {
             throw new EmailException('Cannot add BCC recipient(s)');
         }
-        return $this;
+        return $this;        
     }
          
     public function getSubject() {

@@ -4,6 +4,7 @@ namespace TgEmail\Config;
 
 use TgUtils\Auth\CredentialsProvider;
 use TgUtils\Auth\DefaultCredentialsProvider;
+use TgEmail\EmailException;
 
 /**
  * Configures the PHPMailer SMTP options.
@@ -12,18 +13,18 @@ use TgUtils\Auth\DefaultCredentialsProvider;
  */
 class SmtpConfig {
 
-    private $host;
-    private $port;
-    private $debugLevel;
-    private $auth;
-    private $secureOption;
-    private $credentialsProvider;
-    private $charset;
+    protected $host;
+    protected $port;
+    protected $debugLevel;
+    protected $auth;
+    protected $secureOption;
+    protected $credentialsProvider;
+    protected $charset;
     
     /**
      * Constructor.
      */
-    public function __construct($host, $port, $auth, $username, $password, $secureOption, $charset) {
+    public function __construct($host = NULL, $port = 0, $auth = FALSE, $username = NULL, $password = NULL, $secureOption = NULL, $charset = 'UTF-8') {
         $this->host         = $host;
         $this->port         = $port;
         $this->auth         = $auth;
@@ -107,5 +108,63 @@ class SmtpConfig {
         $this->charset;
         return $this;
     }
+    
+    public static function from($config) {
+        if (is_array($config)) {
+            $config = json_decode(json_encode($config));
+        } else if (is_string($config)) {
+            $config = json_decode($config);
+        }
+        if (is_object($config)) {
+            $rc = new SmtpConfig();
+            if (isset($config->host)) {
+                $rc->setHost($config->host);
+            }
+            if (isset($config->port)) {
+                $rc->setPort($config->port);
+            }
+            if (isset($config->debugLevel)) {
+                $rc->setDebugLevel($config->debugLevel);
+            }
+            if (isset($config->auth)) {
+                $rc->setAuth($config->auth);
+            }
+            if (isset($config->credentialsProvider)) {
+                if (is_a($config->credentialsProvider, 'TgUtils\Auth\CredentialsProvider')) {
+                    $rc->setCredentialsProvider($config->credentialsProvider);
+                } else if (is_object($config->credentialsProvider)) {
+                    $username = NULL;
+                    $password = NULL;
+                    if (isset($config->credentialsProvider->username)) {
+                        $username = $config->credentialsProvider->username;
+                    }
+                    if (isset($config->credentialsProvider->user)) {
+                        $username = $config->credentialsProvider->user;
+                    }
+                    if (isset($config->credentialsProvider->password)) {
+                        $password = $config->credentialsProvider->password;
+                    }
+                    if (isset($config->credentialsProvider->passwd)) {
+                        $password = $config->credentialsProvider->passwd;
+                    }
+                    if (isset($config->credentialsProvider->pass)) {
+                        $password = $config->credentialsProvider->pass;
+                    }
+                    $rc->setCredentials($username, $password);
+                } else {
+                    throw new EmailException('Cannot configure credentialsProvider from given config');
+                }
+            }
+            if (isset($config->secureOption)) {
+                $rc->setSecureOption($config->secureOption);
+            }
+            if (isset($config->charset)) {
+                $rc->setPort($config->charset);
+            }
+            return $rc;
+        }
+        throw new EmailException('Cannot create SmtpConfig object from given config');
+    }
+    
 }
 

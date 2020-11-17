@@ -13,6 +13,7 @@ use TgEmail\Config\BccConfig;
  */
 class EmailConfig {
 
+    private $timezone;
     private $mailMode;
     private $smtpConfig;
     private $rerouteConfig;
@@ -24,7 +25,8 @@ class EmailConfig {
     /**
      * Constructor.
      */
-    public function __construct(SmtpConfig $smtpConfig, RerouteConfig $rerouteConfig = NULL, BccConfig $bccConfig = NULL) {
+    public function __construct(SmtpConfig $smtpConfig = NULL, RerouteConfig $rerouteConfig = NULL, BccConfig $bccConfig = NULL) {
+        $this->timezone      = 'UTC';
         $this->mailMode      = EmailQueue::DEFAULT;
         $this->setSmtpConfig($smtpConfig);
         $this->setRerouteConfig($rerouteConfig);
@@ -32,6 +34,15 @@ class EmailConfig {
         $this->debugAddress  = array();
         $this->defaultSender = NULL;
         $this->subjectPrefix = NULL;
+    }
+    
+    public function getTimezone() {
+        return $this->timezone;
+    }
+    
+    public function setTimezone($tz) {
+        $this->timezone = $tz;
+        return $this;
     }
     
     public function getMailMode() {
@@ -114,12 +125,12 @@ class EmailConfig {
             }
         } else if (is_string($address)) {
             $this->debugAddress[] = EmailAddress::from($address, $name);
-        } else if (is_a($address, 'TgEmail\\MailAddress')) {
-            $this->debugAddress[] = $address;
+        } else if (is_object($address)) {
+            $this->debugAddress[] = EmailAddress::from($address);
         } else {
             throw new EmailException('Cannot add debugging recipient(s)');
         }
-        return $this;
+        return $this;        
     }
     
     public function getSubjectPrefix() {
@@ -130,5 +141,43 @@ class EmailConfig {
     public function setSubjectPrefix($s) {
         $this->subjectPrefix = $s;
     }
+    
+    public static function from($config) {
+        if (is_array($config)) {
+            $config = json_decode(json_encode($config));
+        } else if (is_string($config)) {
+            $config = json_decode($config);
+        }
+        if (is_object($config)) {
+            $rc = new EmailConfig();
+            if (isset($config->timezone)) {
+                $rc->setTimezone($config->timezone);
+            }
+            if (isset($config->smtpConfig)) {
+                $rc->setSmtpConfig(SmtpConfig::from($config->smtpConfig));
+            }
+            if (isset($config->rerouteConfig)) {
+                $rc->setRerouteConfig(RerouteConfig::from($config->rerouteConfig));
+            }
+            if (isset($config->bccConfig)) {
+                $rc->setBccConfig(BccConfig::from($config->bccConfig));
+            }
+            if (isset($config->mailMode)) {
+                $rc->setMailMode($config->mailMode);
+            }
+            if (isset($config->debugAddress)) {
+                $rc->addDebugAddress($config->debugAddress);
+            }
+            if (isset($config->defaultSender)) {
+                $rc->setDefaultSender($config->defaultSender);
+            }
+            if (isset($config->subjectPrefix)) {
+                $rc->setSubjectPrefix($config->subjectPrefix);
+            }
+            return $rc;
+        }
+        throw new EmailException('Cannot create EmailConfig object from given config');
+    }
+    
 }
 

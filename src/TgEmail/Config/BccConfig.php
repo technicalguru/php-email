@@ -12,7 +12,7 @@ use TgEmail\EmailException;
  */
 class BccConfig {
 
-    private $recipients;
+    protected $recipients;
     
     /**
      * Constructor.
@@ -33,12 +33,29 @@ class BccConfig {
             }
         } else if (is_string($address)) {
             $this->recipients[] = EmailAddress::from($address, $name);
-        } else if (is_a($address, 'TgEmail\\MailAddress')) {
-            $this->recipients[] = $address;
+        } else if (is_object($address)) {
+            $this->recipients[] = EmailAddress::from($address);
         } else {
             throw new EmailException('Cannot add recipient(s)');
         }
         return $this;
     }
+    
+    public static function from($config) {
+        if (is_array($config)) {
+            $config = json_decode(json_encode($config));
+        } else if (is_string($config)) {
+            $config = json_decode($config);
+        }
+        if (is_object($config)) {
+            $rc = new BccConfig();
+            if (isset($config->recipients)) {
+                $rc->addRecipients($config->recipients);
+            }
+            return $rc;
+        }
+        throw new EmailException('Cannot create BccConfig object from given config');
+    }
+    
 }
 
