@@ -42,7 +42,7 @@ class EmailAddress {
         if ($this->name != NULL) {
             return $this->name . ' <' . $this->email . '>';
         }
-        return $this->email;
+        return '<' . $this->email . '>';
     }
 
     /**
@@ -75,7 +75,7 @@ class EmailAddress {
         } else if (is_a($s, 'TgEmail\\EmailAddress')) {
             return $s;
         } else if (is_object($s)) {
-            return new EmailAddress($s-email, $s->name);
+            return new EmailAddress($s->email, $s->name);
         }
     }
 }

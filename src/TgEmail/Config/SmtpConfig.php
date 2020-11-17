@@ -105,7 +105,7 @@ class SmtpConfig {
     }
     
     public function setCharset($charset) {
-        $this->charset;
+        $this->charset = $charset;
         return $this;
     }
     
@@ -154,12 +154,31 @@ class SmtpConfig {
                 } else {
                     throw new EmailException('Cannot configure credentialsProvider from given config');
                 }
+            } else if (isset($config->credentials)) {
+                $username = NULL;
+                $password = NULL;
+                if (isset($config->credentials->username)) {
+                    $username = $config->credentials->username;
+                }
+                if (isset($config->credentials->user)) {
+                    $username = $config->credentials->user;
+                }
+                if (isset($config->credentials->password)) {
+                    $password = $config->credentials->password;
+                }
+                if (isset($config->credentials->passwd)) {
+                    $password = $config->credentials->passwd;
+                }
+                if (isset($config->credentials->pass)) {
+                    $password = $config->credentials->pass;
+                }
+                $rc->setCredentials($username, $password);
             }
             if (isset($config->secureOption)) {
                 $rc->setSecureOption($config->secureOption);
             }
             if (isset($config->charset)) {
-                $rc->setPort($config->charset);
+                $rc->setCharset($config->charset);
             }
             return $rc;
         }

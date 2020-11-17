@@ -19,7 +19,8 @@
 		"technicalguru/utils" : "~1",
 		"phpmailer/phpmailer" : "^6.1",
 		"symfony/polyfill-mbstring" : "^1.20",
-		"technicalguru/database" : "~0"
+		"technicalguru/database" : "~0",
+		"phpunit/phpunit": "^9.4"
 	},
 	"autoload" : {
 		"psr-4" : {
@@ -31,6 +32,5 @@
 		}
 	},
 	"require-dev" : {
-		"phpunit/phpunit" : "^9"
 	}
 }
