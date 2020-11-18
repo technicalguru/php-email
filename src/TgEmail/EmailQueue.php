@@ -31,7 +31,7 @@ class EmailQueue {
 
     protected $mailDAO;
     
-    public function __construct(EmailConfig $config, EmailsDAO $mailDAO) {
+    public function __construct($config, $mailDAO) {
         $this->config  = $config;
         $this->mailDAO = $mailDAO;
         $this->mailer  = NULL;
@@ -192,24 +192,29 @@ class EmailQueue {
     public function getReconfiguredEmail(Email $email) {
         $rc = new Email();
         
-        $rc->setSender($email->getSender());
+        if ($email->getSender() != NULL) {
+            $rc->setSender($email->getSender());
+        } else {
+            $rc->setSender($this->config->getDefaultSender());
+        }
         $rc->setReplyTo($email->getReplyTo());
         $rc->addAttachments($email->getAttachments());
         $rc->setBody(Email::TEXT, $email->getBody(Email::TEXT));
         $rc->setBody(Email::HTML, $email->getBody(Email::HTML));
         
         if ($this->config->getMailMode() == EmailQueue::REROUTE) {
-            $rc->setSubject($this->config->getRerouteConfig()->getSubjectPrefix().' '.$email->getSubject().' - '.$email->stringify($email->getTo()));
+            $rc->setSubject($this->config->getRerouteConfig()->getSubjectPrefix().$this->config->getSubjectPrefix().$email->getSubject().' - '.$email->stringify($email->getTo()));
             $rc->addTo($this->config->getRerouteConfig()->getRecipients());
         } else {
-            $rc->setSubject($email->getSubject());
+            $rc->setSubject($this->config->getSubjectPrefix().$email->getSubject());
             $rc->addTo($email->getTo());
-            $rc->addCc($email->getCcc());
+            $rc->addCc($email->getCc());
             $rc->addBcc($email->getBcc());
             if ($this->config->getMailMode() == EmailQueue::BCC) {
                 $rc->addBcc($this->config->getBccConfig()->getRecipients());
             }
         }
+        return $rc;
     }
     
     public function send(Email $email) {
@@ -226,7 +231,7 @@ class EmailQueue {
         $phpMailer = $this->getMailer();
         
         // Sender
-        $phpMailer->setFrom($email->getSender()->email, $email-getSender()->name);
+        $phpMailer->setFrom($email->getSender()->email, $email->getSender()->name);
         
         // Reply-To
         if ($email->getReplyTo() != NULL) {
@@ -259,7 +264,7 @@ class EmailQueue {
         }
         
         // Attachments
-        foreach ($email->getAttachments as $a) {
+        foreach ($email->getAttachments() as $a) {
             if ($a->type == Attachment::ATTACHED) {
                 $phpMailer->AddAttachment($a->path, $a->name, 'base64', $a->mimeType);
             } else if ($a->type == 'embedded') {
@@ -267,14 +272,14 @@ class EmailQueue {
             }
         }
 
-        $rc = FALSE;
+        $rc = TRUE;
         if ($this->config->getMailMode() != EmailQueue::BLOCK) {
             $rc = $phpMailer->send();
             Log::debug('Mail sent: '.$email->getLogString());
             if (!$rc) {
                 Log::error("Mailer Error: " . $phpMailer->ErrorInfo);
             } else {
-                foreach ($email->getAttachments as $a) {
+                foreach ($email->getAttachments() as $a) {
                     if ($a->deleteAfterSent) {
                         unlink($a->path);
                     }
@@ -304,7 +309,7 @@ class EmailQueue {
             $email->failed_attempts = 0;
             $email->sent_time       = NULL;
             $rc = $this->mailDAO->create($email);
-            return $rc;
+            return is_int($rc);
         }
         throw new EmailException('Queueing is not supported. No DAO available.');
     }

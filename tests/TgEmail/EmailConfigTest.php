@@ -56,7 +56,7 @@ class EmailConfigTest extends TestCase {
         $this->assertEquals($bccConfig, $config->getBccConfig());
     }
        
-    public function testAddAddDebugAddressWithString(): void {
+    public function testAddDebugAddressWithString(): void {
         $config = new EmailConfig();
         $config->addDebugAddress('John Doe <john.doe@example.com');
         
@@ -65,7 +65,7 @@ class EmailConfigTest extends TestCase {
         $this->assertEquals('John Doe <john.doe@example.com>', $recipients[0]->__toString());
     }
     
-    public function testAddAddDebugAddressWithObject(): void {
+    public function testAddDebugAddressWithObject(): void {
         $config = new EmailConfig();
         $config->addDebugAddress(EmailAddress::from('John Doe  <john.doe@example.com'));
         
@@ -74,7 +74,7 @@ class EmailConfigTest extends TestCase {
         $this->assertEquals('John Doe <john.doe@example.com>', $recipients[0]->__toString());
     }
     
-    public function testAddAddDebugAddressWithArray(): void {
+    public function testAddDebugAddressWithArray(): void {
         $config = new EmailConfig();
         $config->addDebugAddress(array(
             EmailAddress::from('John Doe  <john.doe@example.com'),

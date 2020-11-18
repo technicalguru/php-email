@@ -15,6 +15,8 @@ class Email {
     public const PROCESSING = 'processing';
     public const SENT       = 'sent';
     public const FAILED     = 'failed';
+    public const HTML       = 'html';
+    public const TEXT       = 'text';
     
     public $uid;
     public $status;
@@ -44,7 +46,7 @@ class Email {
         return $this->sender;
     }
     
-    public function setSender($email, $name) {
+    public function setSender($email, $name = NULL) {
         $this->sender = EmailAddress::from($email, $name);
         return $this;
     }
@@ -55,10 +57,10 @@ class Email {
                 $this->reply_to = EmailAddress::from($this->reply_to);
             }
         }
-        return $this->sender;
+        return $this->reply_to;
     }
     
-    public function setReplyTo($email, $name) {
+    public function setReplyTo($email, $name = NULL) {
         $this->reply_to = EmailAddress::from($email, $name);
         return $this;
     }
@@ -88,7 +90,7 @@ class Email {
     }
     
     public function getTo() {
-        return getRecipients()->to;
+        return $this->getRecipients()->to;
     }
     
     public function addTo($address, $name = NULL) {
@@ -97,9 +99,9 @@ class Email {
                 $this->addTo($a);
             }
         } else if (is_string($address)) {
-            getRecipients()->to[] = EmailAddress::from($address, $name);
+            $this->getRecipients()->to[] = EmailAddress::from($address, $name);
         } else if (is_object($address)) {
-            getRecipients()->to[] = EmailAddress::from($address);
+            $this->getRecipients()->to[] = EmailAddress::from($address);
         } else {
             throw new EmailException('Cannot add TO recipient(s)');
         }
@@ -107,7 +109,7 @@ class Email {
     }
             
     public function getCc() {
-        return getRecipients()->cc;
+        return $this->getRecipients()->cc;
     }
     
     public function addCc($address, $name = NULL) {
@@ -116,9 +118,9 @@ class Email {
                 $this->addCc($a);
             }
         } else if (is_string($address)) {
-            getRecipients()->cc[] = EmailAddress::from($address, $name);
+            $this->getRecipients()->cc[] = EmailAddress::from($address, $name);
         } else if (is_object($address)) {
-            getRecipients()->cc[] = EmailAddress::from($address);
+            $this->getRecipients()->cc[] = EmailAddress::from($address);
         } else {
             throw new EmailException('Cannot add CC recipient(s)');
         }
@@ -126,7 +128,7 @@ class Email {
     }
             
     public function getBcc() {
-        return getRecipients()->bcc;
+        return $this->getRecipients()->bcc;
     }
     
     public function addBcc($address, $name = NULL) {
@@ -135,9 +137,9 @@ class Email {
                 $this->addBcc($a);
             }
         } else if (is_string($address)) {
-            getRecipients()->bcc[] = EmailAddress::from($address, $name);
+            $this->getRecipients()->bcc[] = EmailAddress::from($address, $name);
         } else if (is_object($address)) {
-            getRecipients()->bcc[] = EmailAddress::from($address);
+            $this->getRecipients()->bcc[] = EmailAddress::from($address);
         } else {
             throw new EmailException('Cannot add BCC recipient(s)');
         }
@@ -156,7 +158,7 @@ class Email {
     public function getBody($type = 'text') {
         if (($this->body != NULL) && is_string($this->body)) {
             $this->body = json_decode($this->body);
-        } else {
+        } else if ($this->body == NULL) {
             $this->body = new \stdClass;
         }
         if (isset($this->body->$type)) {
@@ -168,7 +170,7 @@ class Email {
     public function setBody($type = 'text', $body) {
         if (($this->body != NULL) && is_string($this->body)) {
             $this->body = json_decode($this->body);
-        } else {
+        } else if ($this->body == NULL) {
             $this->body = new \stdClass;
         }
         $this->body->$type = $body;
@@ -202,16 +204,16 @@ class Email {
         return $this;
     }
     
-    public function getSentTime() {
+    public function getSentTime($timezone = 'UTC') {
         if (($this->sent_time != NULL) && is_string($this->sent_time)) {
-            $this->sent_time = new Date($this->sent_time, 'Europe/Berlin');
+            $this->sent_time = new Date($this->sent_time, $timezone);
         }
         return $this->sent_time;
     }
     
-    public function getQueuedTime() {
+    public function getQueuedTime($timezone = 'UTC') {
         if (($this->queued_time != NULL) && is_string($this->queued_time)) {
-            $this->queued_time = new Date($this->queued_time, 'Europe/Berlin');
+            $this->queued_time = new Date($this->queued_time, $timezone);
         }
         return $this->queued_time;
     }
