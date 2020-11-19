@@ -251,7 +251,7 @@ user needs to wait for the sending to complete before she/he can see any respons
 Queueing e-mails is the solution as sending is deferred (preferrable to a cron job) and the user receives
 her/his application response fast. 
 
-You will need a [`TgDatabase\Database`](https://github.com/technicalguru/php-database/blob/src/TgEmail/Database.php) 
+You will need a [`TgDatabase\Database`](https://github.com/technicalguru/php-database/blob/main/src/TgDatabase/Database.php) 
 object to queue e-mails. Otherwise, `EmailQueue` will throw exceptions when you try to queue e-mails. Please refer
 to the [`TgDatabase\Database`](https://github.com/technicalguru/php-database/) documentation about how to create
 the `Database` object. Setup the according `EmailsDAO` and `EmailQueue` as follows:
@@ -381,7 +381,7 @@ $emailConfig   = EmailConfig::from($jsonStringOrObjectOrAssocArray);
 
 Most PHPUnit tests will not be executed when there is no SMTP server or database available. The unit tests will check
 for environment variable `EMAIL_TEST_SMTP` and `EMAIL_DATABASE`. There is a bash script available, 
-[`set-test-env.sh`](https://github.com/technicalguru/php-email/blob/set-test-env.sh) that creates those
+[`set-test-env.sh`](https://github.com/technicalguru/php-email/blob/main/set-test-env.sh) that creates those
 variables for you. Copy it to e.g. `set-local-test-env.sh` and follow instructions in the file.
 
 # Contribution
