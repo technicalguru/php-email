@@ -1,0 +1,36 @@
+{
+	"name" : "technicalguru/email",
+	"description" : "Provides an object-oriented way to send and queue emails",
+	"type" : "library",
+	"keywords" : [
+		"email",
+		"mail",
+		"mailqueue",
+		"queue"
+	],
+	"license" : "LGPL-3.0-or-later",
+	"authors" : [{
+			"name" : "technicalguru",
+			"email" : "github@ralph-schuster.eu"
+		}
+	],
+	"require" : {
+		"php" : ">=7.0.0",
+		"technicalguru/utils" : "~1",
+		"phpmailer/phpmailer" : "^6.1",
+		"symfony/polyfill-mbstring" : "^1.20",
+		"technicalguru/database" : "~0",
+		"phpunit/phpunit": "^9.4"
+	},
+	"autoload" : {
+		"psr-4" : {
+			"TgEmail\\" : "src/TgEmail/",
+			"" : ""
+		},
+		"psr-0" : {
+			"TgEmail" : "src/TgEmail"
+		}
+	},
+	"require-dev" : {
+	}
+}
