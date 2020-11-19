@@ -34,7 +34,7 @@ SMTP_PORT=587
 SMTP_AUTH=true
 SMTP_USER=username
 SMTP_PASS=password
-SMTP_SECURE=tls
+SMTP_SECURE=starttls
 
 # The Debug Address (for test mail feature
 DEBUG_EMAIL=$TARGET_EMAIL
@@ -60,7 +60,7 @@ REROUTE_CONFIG="{\"recipients\":\"${REROUTE_EMAIL}\",\"subjectPrefix\":\"[Rerout
 SMTP_CONFIG="{\"host\":\"${SMTP_HOST}\",\"port\":${SMTP_PORT},\"debugLevel\":${DEBUG_LEVEL},\"auth\":${SMTP_AUTH},\"credentials\":{\"user\":\"${SMTP_USER}\",\"pass\":\"${SMTP_PASS}\"},\"secureOption\":\"${SMTP_SECURE}\",\"charset\":\"utf8\"}"
 
 EMAIL_TEST_SMTP="{\"timezone\":\"${TIMEZONE}\",\"mailMode\":\"default\",\"targetAddress\":\"${TARGET_EMAIL}\", \"smtpConfig\":${SMTP_CONFIG},\"rerouteConfig\":${REROUTE_CONFIG},\"bccConfig\":${BCC_CONFIG},\"debugAddress\":\"${DEBUG_EMAIL}\",\"defaultSender\":\"${SENDER_EMAIL}\",\"subjectPrefix\":\"[PHPUnitTest] \"}"
-EMAIL_DATABASE="{\"host\":\"${DB_HOST}\",\"port\":${DB_PORT},\"dname\":\"${DB_NAME}\",\"user\":\"${DB_USER}\",\"pass\":\"${DB_PASS}\",\"tablePrefix\":\"${DB_PREFIX}\"}"
+EMAIL_DATABASE="{\"host\":\"${DB_HOST}\",\"port\":${DB_PORT},\"dbname\":\"${DB_NAME}\",\"user\":\"${DB_USER}\",\"pass\":\"${DB_PASS}\",\"tablePrefix\":\"${DB_PREFIX}\"}"
 
 export EMAIL_TEST_SMTP
 export EMAIL_DATABASE

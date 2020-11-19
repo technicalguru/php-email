@@ -31,7 +31,7 @@ class EmailQueue {
 
     protected $mailDAO;
     
-    public function __construct($config, $mailDAO) {
+    public function __construct($config, $mailDAO = NULL) {
         $this->config  = $config;
         $this->mailDAO = $mailDAO;
         $this->mailer  = NULL;
@@ -53,6 +53,15 @@ class EmailQueue {
     public function sendTestMail() {
         $email = $this->createTestMail();
         return $this->_send($email);
+    }
+    
+    /**
+     * Set a new mail mode.
+     * @param string $mailMode - the new mail mode
+     * @param object $config   - the configuration of this mail mode (optional when config already available or not required)
+     */
+    public function setMailMode($mailMode, $config = NULL) {
+        $this->config->setMailMode($mailMode, $config);
     }
     
     /**
@@ -176,7 +185,7 @@ class EmailQueue {
                         $email->status = Email::PENDING;
                     }
                 } else {
-                    $email->sent_time = new Date(time(), $this->config-getTimezone());
+                    $email->sent_time = new Date(time(), $this->config->getTimezone());
                 }
                 $this->mailDAO->save($email);
                 return $rc;
@@ -304,12 +313,15 @@ class EmailQueue {
      */
     protected function _queue($email) {
         if ($this->mailDAO != NULL) {
-            $email->queued_time     = new Date(time(), $this->config-getTimezone());
-            $email->status          = Email::PENDING;
-            $email->failed_attempts = 0;
-            $email->sent_time       = NULL;
-            $rc = $this->mailDAO->create($email);
-            return is_int($rc);
+            if ($this->config->getMailMode() != EmailQueue::BLOCK) {
+                $email->queued_time     = new Date(time(), $this->config->getTimezone());
+                $email->status          = Email::PENDING;
+                $email->failed_attempts = 0;
+                $email->sent_time       = NULL;
+                $rc = $this->mailDAO->create($email);
+                return is_int($rc);
+            }
+            return TRUE;
         }
         throw new EmailException('Queueing is not supported. No DAO available.');
     }
