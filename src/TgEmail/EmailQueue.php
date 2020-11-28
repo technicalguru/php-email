@@ -197,10 +197,25 @@ class EmailQueue {
         return $rc;
     }
     
-    public function send(Email $email) {
-        // Modify mail according to sending mode
-        $email = $this->getReconfiguredEmail($email);
-        return $this->_send($email);
+    /**
+     * Sends a single email or multiple emails.
+     * @param mixed $email - single Email object or array of Email objects
+     * @return TRUE when email was sent or number of emails sent successfully
+     */
+    public function send($email) {
+        if (is_a($email, 'TgEmail\\Email')) {
+            // Modify mail according to sending mode
+            $email = $this->getReconfiguredEmail($email);
+            return $this->_send($email);
+        } else if (is_array($email)) {
+            $sent = 0;
+            foreach ($email AS $m) {
+                if ($this->send($m)) $sent++;
+            }
+            return $sent;
+        } else {
+            throw new EmailException('Cannot send: $email must be array of Email or single Email object');
+        }
     }
     
     /**
@@ -280,7 +295,7 @@ class EmailQueue {
      * @param mixed $email - single Email object or array of Email objects
      * @param array $recipients - list of recipients to send the same email. Can be a list of lists (TO addresses)
      *    or a list of objects with to, cc or bcc attributes that define the recipients.
-     * @return TRUE when email was queued
+     * @return TRUE when email was queued or number of emails queued successfully
      */
     public function queue($email, $recipients = NULL) {
         if (is_a($email, 'TgEmail\\Email')) {
@@ -291,24 +306,28 @@ class EmailQueue {
                 return $this->_queue($email);
             }
             // Single email with multiple recipient definitions
+            $queued = 0;
             foreach ($recipients AS $def) {
                 if (is_array($def)) {
                     // All TO addresses
                     $email->recipients = NULL;
                     $email->addTo($def);
-                    $this->queue($email);
+                    if ($this->queue($email)) $queued++;
                 } else {
                     $email->recipients = NULL;
                     if (isset($def->to))  $email->addTo($def->to);
                     if (isset($def->cc))  $email->addCc($def->cc);
                     if (isset($def->bcc)) $email->addBcc($def->bcc);
-                    $this->queue($email);
+                    if ($this->queue($email)) $queued++;
                 }
             }
+            return $queued;
         } else if (is_array($email)) {
+            $queued = 0;
             foreach ($email AS $m) {
-                $this->queue($m);
+                if ($this->queue($m)) $queued++;
             }
+            return $queued;
         } else {
             throw new EmailException('Cannot queue: $email must be array of Email or single Email object');
         }
