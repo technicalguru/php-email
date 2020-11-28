@@ -64,35 +64,6 @@ class EmailQueue {
         $this->config->setMailMode($mailMode, $config);
     }
     
-    /**
-     * TODO: smth like queue($email, $recipients) ?
-     * Sends multiple emails.
-     *
-     * @param
-     *            array of
-     *            mixed recipients - array of recipients or single recipient to send to
-     *            string templateName - mail template name to be used, located in <component>/site/email/<lang>/<name>.[html|txt].php
-     *            string subject - subject
-     *            mixed params - parameters to be given to email template
-     *            string domain - the domain this mail belongs to
-     * @return array of
-     *         boolean success - overall success
-     *         array errors - individual boolean return codes for each mail
-     *
-    public function queueMails($mailInfos) {
-        $rc = array(
-            'success' => true,
-            'errors' => array(),
-        );
-        foreach ($mailInfos as $mail) {
-            $c = $this->queueMail($mail['recipients'], $mail['templateName'], $mail['subject'], $mail['params']);
-            $rc['error'][] = $c;
-            if (! $c) $rc['success'] = false;
-        }
-        return $rc;
-    }
-    */
-    
     protected function getMailer() {
         if ($this->mailer == null) {
             $this->mailer = new PHPMailer();
@@ -298,10 +269,49 @@ class EmailQueue {
         return $rc;
     }
 
-    public function queue(Email $email) {
-        // Modify mail according to sending mode
-        $email = $this->getReconfiguredEmail($email);
-        return $this->_queue($email);
+    /**
+     * Queues a single email or multiple emails.
+     * <p>The second parameter $recipients can be used with single Email object only.</p>
+     * <p>Example of $recpients:</p>
+     * <ul>
+     * <li>list of list of recipients: <code>[ ["john.doe@example.com","john@example.com"], ["jane.doe@example.com"] ]</code></li>
+     * <li>list of recipient objects: <code>[ {"to":"john.doe@example.com", "cc":"jane.doe@example.com"}, ... ]</code></li>
+     * </ul>
+     * @param mixed $email - single Email object or array of Email objects
+     * @param array $recipients - list of recipients to send the same email. Can be a list of lists (TO addresses)
+     *    or a list of objects with to, cc or bcc attributes that define the recipients.
+     * @return TRUE when email was queued
+     */
+    public function queue($email, $recipients = NULL) {
+        if (is_a($email, 'TgEmail\\Email')) {
+            if ($recipients == NULL) {
+                // Single Email to be sent
+                // Modify mail according to sending mode
+                $email = $this->getReconfiguredEmail($email);
+                return $this->_queue($email);
+            }
+            // Single email with multiple recipient definitions
+            foreach ($recipients AS $def) {
+                if (is_array($def)) {
+                    // All TO addresses
+                    $email->recipients = NULL;
+                    $email->addTo($def);
+                    $this->queue($email);
+                } else {
+                    $email->recipients = NULL;
+                    if (isset($def->to))  $email->addTo($def->to);
+                    if (isset($def->cc))  $email->addCc($def->cc);
+                    if (isset($def->bcc)) $email->addBcc($def->bcc);
+                    $this->queue($email);
+                }
+            }
+        } else if (is_array($email)) {
+            foreach ($email AS $m) {
+                $this->queue($m);
+            }
+        } else {
+            throw new EmailException('Cannot queue: $email must be array of Email or single Email object');
+        }
     }
     
     /**
