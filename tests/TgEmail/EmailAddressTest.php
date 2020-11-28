@@ -37,6 +37,11 @@ class EmailAddressTest extends TestCase {
         $this->assertEquals('John Doe <john.doe@example.com>', $addr->__toString());
     }
     
+    public function testFromWithJsonString(): void {
+        $addr = EmailAddress::from('{"name":"John Doe","email":"john.doe@example.com"}');
+        $this->assertEquals('John Doe <john.doe@example.com>', $addr->__toString());
+    }
+    
     public function testFromWithEmailName(): void {
         $addr = EmailAddress::from('john.doe@example.com', 'John Doe');
         $this->assertEquals('John Doe <john.doe@example.com>', $addr->__toString());
