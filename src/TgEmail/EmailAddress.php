@@ -55,20 +55,24 @@ class EmailAddress {
     public static function from($s, $name = NULL) {
         if (is_string($s)) {
             if ($name == NULL) {
-                $pos = strpos($s, '<');
-                if ($pos !== FALSE) {
-                    $name = $pos > 0 ? trim(substr($s, 0, $pos)) : NULL;
-                    if ($name == '') $name = NULL;
+				if (substr($s, 0, 1) == '{') {
+					return self::from(json_decode($s));
+				} else {
+					$pos = strpos($s, '<');
+					if ($pos !== FALSE) {
+						$name = $pos > 0 ? trim(substr($s, 0, $pos)) : NULL;
+						if ($name == '') $name = NULL;
 
-                    $email = substr($s, $pos + 1);
-                    $pos = strpos($email, '>');
-                    if ($pos !== FALSE) {
-                        $email = trim(substr($email, 0, $pos));
-                    }
+						$email = substr($s, $pos + 1);
+						$pos = strpos($email, '>');
+						if ($pos !== FALSE) {
+							$email = trim(substr($email, 0, $pos));
+						}
 
-                    return new EmailAddress($email, $name);
-                }
-                return new EmailAddress($s);
+						return new EmailAddress($email, $name);
+					}
+					return new EmailAddress($s);
+				}
             } else {
                 return new EmailAddress($s, $name);
             }

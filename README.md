@@ -377,6 +377,11 @@ $bccConfig     = BccConfig::from($jsonStringOrObjectOrAssocArray);
 $emailConfig   = EmailConfig::from($jsonStringOrObjectOrAssocArray);
 ```
 
+## Sending and queueing multiple e-mails
+
+It is possible to pass an array of `Email` objects to `send()` and `queue()` functions. However, especially for sending
+e-mails immediately you should be aware that this can take some time. A better strategy is to queue mass mailings.
+
 # Development Notes
 
 Most PHPUnit tests will not be executed when there is no SMTP server or database available. The unit tests will check
