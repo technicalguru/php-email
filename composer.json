@@ -24,11 +24,15 @@
 	},
 	"autoload" : {
 		"psr-4" : {
-			"TgEmail\\" : "src/TgEmail/",
-			"" : ""
+			"TgEmail\\" : "src/TgEmail/"
 		},
 		"psr-0" : {
 			"TgEmail" : "src/TgEmail"
+		}
+	},
+	"extra": {
+		"branch-alias": {
+			"dev-master": "1.0-dev"
 		}
 	},
 	"require-dev" : {
