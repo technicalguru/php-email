@@ -1,3 +1,4 @@
+# Test script
 
-vendor/phpunit/phpunit/phpunit tests/
-
+composer update
+./vendor/phpunit/phpunit/phpunit tests
