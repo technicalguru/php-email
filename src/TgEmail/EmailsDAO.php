@@ -52,7 +52,15 @@ class EmailsDAO extends DAO {
     }
     
     public function getPendingEmails() {
-        return $this->find(array('status' => Email::PENDING), array('queued_time'));
+        return $this->getEmailsByStatus(Email::PENDING, 'queued_time');
     }
+
+    public function getFailedEmails() {
+        return $this->getEmailsByStatus(Email::FAILED);
+    }
+
+	public function getEmailsByStatus($status, $order = NULL) {
+        return $this->find(array('status' => $status), $order);
+	}
 }
 

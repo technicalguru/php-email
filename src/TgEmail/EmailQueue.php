@@ -86,6 +86,13 @@ class EmailQueue {
         return $this->mailer;
     }
 
+	/**
+	  * Returns the mail queue object (DAO).
+	  */
+	public function getQueue() {
+		return $this->mailDAO;
+	}
+
     /**
      * Synchronously send emails from queue according to priority.
      */
