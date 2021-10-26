@@ -3,6 +3,8 @@
 namespace TgEmail;
 
 use TgDatabase\DAO;
+use TgDatabase\Restrictions;
+use TgDatabase\Order;
 
 /**
  * The DAO for Email objects
@@ -47,12 +49,12 @@ class EmailsDAO extends DAO {
     }
     
     public function housekeeping($maxSentDays = 90, $maxFailedDays = 180) {
-        $this->database->delete($this->tableName, 'status=\'sent\'   AND TIMESTAMPDIFF(DAY, sent_time, NOW()) >= '.$maxSentDays);
-        $this->database->delete($this->tableName, 'status=\'failed\' AND TIMESTAMPDIFF(DAY, sent_time, NOW()) >= '.$maxFailedDays);
+        $this->database->delete($this->tableName, array(Restrictions::eq('status', 'sent'),  Restrictions::sql('TIMESTAMPDIFF(DAY, sent_time, NOW()) >= '.$maxSentDays)));
+        $this->database->delete($this->tableName, array(Restrictions::eq('status','failed'), Restrictions::sql('TIMESTAMPDIFF(DAY, sent_time, NOW()) >= '.$maxFailedDays)));
     }
     
     public function getPendingEmails() {
-        return $this->getEmailsByStatus(Email::PENDING, 'queued_time');
+        return $this->getEmailsByStatus(Email::PENDING, Order::asc('queued_time'));
     }
 
     public function getFailedEmails() {
@@ -60,7 +62,7 @@ class EmailsDAO extends DAO {
     }
 
 	public function getEmailsByStatus($status, $order = NULL) {
-        return $this->find(array('status' => $status), $order);
+        return $this->find(Restrictions::eq('status', $status), $order);
 	}
 }
 
