@@ -167,7 +167,7 @@ class Email {
         return NULL;
     }
     
-    public function setBody($type = 'text', $body) {
+    public function setBody($type = 'text', $body = '') {
         if (($this->body != NULL) && is_string($this->body)) {
             $this->body = json_decode($this->body);
         } else if ($this->body == NULL) {
